@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyHive | User Profile</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <img src="SH-logo.png" alt="StudyHive Logo" class="logo">
+        </div>
+        <div class="header-center">
+            <a href="dashboard-room.html">
+                <h1>StudyHive</h1>
+            </a>
+        </div>
+        <nav class="header-right">
+            <!--            <a href="login.html" class="nav-btn">Login</a>-->
+            <button id="darkModeToggle">🌙</button>
+            <div class="profile-menu">
+                <button class="profile-btn">👤</button>
+                <ul class="profile-dropdown">
+                    <li><a href="userprofile.html">View Profile</a></li>
+                    <li><a href="login.html">Log Out</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Profile Section -->
+    <main class="profile-container">
+        <section class="profile-card">
+            <div class="profile-header">
+                <div class="avatar">JD</div>
+                <div>
+                    <h2 id="userName">JohnDoe</h2>
+                    <p id="userEmail">johndoe@example.com</p>
+                </div>
+            </div>
+
+            <div class="profile-details">
+                <p><strong>First Name:</strong> <span id="userFirstName">John</span></p>
+                <p><strong>Last Name:</strong> <span id="userLastName">Doe</span></p>
+                <p><strong>User ID:</strong> <span id="userId">123e4567-e89b-12d3-a456-426614174000</span></p>
+                <p><strong>Max Rooms:</strong> <span id="userMaxRooms">5</span></p>
+                <p><strong>Credit Score:</strong> <span id="userCreditScore">85</span></p>
+            </div>
+        </section>
+
+        <!-- Rooms Section -->
+        <section class="rooms-card">
+            <h3>User Rooms</h3>
+            <ul class="room-list" id="userRoomInfo">
+                <li><span class="room-name">Physics101</span>  <span class="room-role owner">OWNER</span></li>
+                <li><span class="room-name">MathClub</span>  <span class="room-role admin">ADMIN</span></li>
+                <li><span class="room-name">ChemistryLab</span>  <span class="room-role member">MEMBER</span></li>
+            </ul>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><a href="about.html">About</a> | <a href="about.html">Contact</a></p>
+        <p>&copy; 2025 StudyHive. All rights reserved.</p>
+    </footer>
+
+</body>
+
+<script>
+    // Dark mode toggle
+    const darkToggle = document.getElementById("darkModeToggle");
+    darkToggle.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+    });
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+
+    // Profile dropdown toggle
+    document.querySelector(".profile-btn").addEventListener("click", () => {
+        document.querySelector(".profile-dropdown").classList.toggle("show");
+    });
+
+    // Profile dropdown toggle
+    const profileBtn = document.querySelector(".profile-btn");
+    const profileDropdown = document.querySelector(".profile-dropdown");
+
+    // Close dropdown if click outside
+    document.addEventListener("click", (e) => {
+        if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+            profileDropdown.classList.remove("show");
+        }
+    });
+</script>
+</html>

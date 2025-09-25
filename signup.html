@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyHive - Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <img src="SH-logo.png" alt="StudyHive Logo" class="logo">
+    </div>
+    <div class="header-center">
+      <a href="index.html">
+        <h1>StudyHive</h1>
+      </a>
+    </div>
+    <div class="header-right">
+      <a href="login.html" class="login-btn">Login</a>
+      <button id="darkModeToggle">🌙</button>
+    </div>
+  </header>
+
+  <!-- Signup Section -->
+  <main class="login-page">
+    <section class="login-box">
+      <h2>Sign Up</h2>
+      <form id="signupForm" class="signup-form">
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="button">Sign Up</button>
+      </form>
+
+      <p class="signup-hint">
+        Already have an account? <a href="login.html">Login here</a>
+      </p>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="about.html">Contact</a>
+    </div>
+    <p>© <span id="year"></span> StudyHive. All rights reserved.</p>
+  </footer>
+
+  <!-- Global JS -->
+  <script src="script.js"></script>
+  <script src="config.js"></script>
+
+  <!-- Inline Signup Logic -->
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const submitBtn = this.querySelector("button[type='submit']");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating Account...";
+
+      fetch(`${BASE_URL}/user-controller/initiateUserSignup`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          userEmail: email,
+          userPassword: password,
+        })
+      })
+              .then(response => {
+                return response.json().then(data => {
+                  if (!response.ok) {
+                    throw new Error(data.responseMessage || "Failed to create account");
+                  }
+                  return data;
+                });
+              })
+              .then(data => {
+                alert("An OTP has been sent to your email. Please verify to activate your account.");
+                window.location.href = "activate-account.html";
+              })
+              .catch(error => {
+                alert(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Sign Up";
+              });
+    });
+  </script>
+</body>
+</html>

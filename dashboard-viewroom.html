@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyHive - View Room</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <img src="SH-logo.png" alt="StudyHive Logo" class="logo">
+        </div>
+        <div class="header-center">
+            <a href="dashboard-room.html">
+                <h1>StudyHive</h1>
+            </a>
+        </div>
+        <nav class="header-right">
+            <button id="darkModeToggle">🌙</button>
+            <div class="profile-menu">
+                <button class="profile-btn">👤</button>
+                <ul class="profile-dropdown">
+                    <li><a href="userprofile.html">View Profile</a></li>
+                    <li><a href="login.html">Log Out</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Top Bar -->
+    <section class="room-topbar">
+        <div class="room-info">
+            <h2 id="roomName" class="room-name">
+                StudyHive_TestRoom1 <span class="arrow">▼</span>
+            </h2>
+            <!-- Two-sided Room Dropdown -->
+            <div id="roomDropdown" class="room-dropdown">
+                <div class="dropdown-sidebar">
+                    <div class="sidebar-option active" data-content="overview">Overview</div>
+                    <div class="sidebar-option" data-content="members">Members</div>
+                    <div class="sidebar-option" data-content="media">Media/Files</div>
+                </div>
+                <div class="dropdown-content">
+                    <!-- Overview Section -->
+                    <div class="content-section active" id="overview-content">
+                        <h3>Room Metadata</h3>
+                        <p><strong>Description:</strong> Test Room for demo</p>
+                        <p><strong>Capacity:</strong> 30</p>
+                        <p><strong>Created By:</strong> StudyHive_TestUser1</p>
+                        <p><strong>Created At:</strong> 2025-09-19</p>
+                        <p><strong>Status:</strong> Active</p>
+                        <p><strong>Privacy:</strong> Public</p>
+                    </div>
+
+                    <!-- Members Section -->
+                    <div class="content-section" id="members-content">
+                        <h3>Room Members</h3>
+                        <ul id="membersList" class="member-list"></ul>
+                    </div>
+
+                    <!-- Media Section -->
+                    <div class="content-section" id="media-content">
+                        <h3>Media & Files</h3>
+                        <div class="media-gallery">
+                            <img src="1386888.jpg" alt="Media 1" class="media-thumbnail" onclick="showImage(this.src)">
+                            <img src="1371405.jpeg" alt="Media 2" class="media-thumbnail" onclick="showImage(this.src)">
+                            <img src="1371403.jpeg" alt="Media 3" class="media-thumbnail" onclick="showImage(this.src)">
+                            <img src="1323165.png" alt="Media 4" class="media-thumbnail" onclick="showImage(this.src)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="room-sidebar">
+            <button class="room-sidebar-btn" id="notesBtn">Notes</button>
+        </aside>
+        <!-- Main Content -->
+        <main class="viewroom-main">
+            <h3>Welcome to the Room!</h3>
+            <p>This is where shared study materials, discussions, or upcoming events can go.</p>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><a href="about.html">About</a> | <a href="about.html">Contact</a></p>
+        <p>&copy; 2025 StudyHive. All rights reserved.</p>
+    </footer>
+
+    <!-- Slideup: User Profile -->
+    <div id="userSlideup" class="room-slideup-panel">
+        <div class="room-slideup-content">
+            <button class="close-btn" onclick="closeSlideup('userSlideup')">✖</button>
+            <h2 id="userName"></h2>
+            <button id="messageUserBtn" class="cta-btn">Message</button>
+        </div>
+    </div>
+
+    <!-- Slideup: Notes -->
+    <div id="notesSlideup" class="room-slideup-panel">
+        <div class="room-slideup-content">
+            <button class="close-btn" onclick="closeSlideup('notesSlideup')">✖</button>
+            <h2>Room Notes</h2>
+            <ul id="notesList"></ul>
+        </div>
+    </div>
+
+    <!-- Context Menu for Members -->
+    <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item" onclick="assignRole()">Assign Role</div>
+        <div class="context-menu-item" onclick="removeUser()">Remove User</div>
+        <div class="context-menu-item" onclick="kickUser()">Kick User</div>
+        <div class="context-menu-item" onclick="banUser()">Ban User</div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeImageModal()">×</button>
+            <img id="modalImage" class="modal-image" src="" alt="Full Image">
+        </div>
+    </div>
+
+    <!-- Floating Chat Icon -->
+    <button id="chatToggle" class="chat-fab">💬</button>
+
+    <!-- Chat Panel -->
+    <div id="chatPanel" class="chat-panel">
+    <div class="chat-header">
+        <h3>Room Chat</h3>
+        <button onclick="closeChat()">✖</button>
+    </div>
+    <div class="chat-body">
+        <p><strong>Owner:</strong> Welcome to the room!</p>
+        <p><strong>Member:</strong> Excited to study together!</p>
+    </div>
+    <div class="chat-input">
+        <input type="text" placeholder="Type a message...">
+        <button>Send</button>
+    </div>
+</div>
+
+<script>
+    // Dark mode toggle
+    const darkToggle = document.getElementById("darkModeToggle");
+    darkToggle.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+    });
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+
+    // Profile dropdown toggle
+    const profileBtn = document.querySelector(".profile-btn");
+    const profileDropdown = document.querySelector(".profile-dropdown");
+    profileBtn.addEventListener("click", () => {
+        profileDropdown.classList.toggle("show");
+    });
+
+    // Dummy room users with roles
+    const users = [
+        { name: "OwnerUser", role: "OWNER" },
+        { name: "AdminUser1", role: "ADMIN" },
+        { name: "AdminUser2", role: "ADMIN" },
+        { name: "TutorUser", role: "TUTOR" },
+        { name: "MemberUser1", role: "MEMBER" },
+        { name: "MemberUser2", role: "MEMBER" }
+    ];
+
+    // Populate members list
+    const membersList = document.getElementById("membersList");
+    users.forEach(user => {
+        const li = document.createElement("li");
+        li.className = "member-item";
+        li.innerHTML = `
+            <span class="member-name">${user.name}</span>
+            <span class="member-role role-${user.role.toLowerCase()}">${user.role}</span>
+        `;
+        li.onclick = (e) => {
+            if (e.button === 0) { // Left click
+                showUserSlideup(user.name);
+            }
+        };
+        li.oncontextmenu = (e) => {
+            e.preventDefault();
+            showContextMenu(e, user.name);
+        };
+        membersList.appendChild(li);
+    });
+
+    // Room dropdown toggle and sidebar navigation
+    const roomName = document.getElementById("roomName");
+    const roomDropdown = document.getElementById("roomDropdown");
+    const sidebarOptions = document.querySelectorAll(".sidebar-option");
+    const contentSections = document.querySelectorAll(".content-section");
+
+    roomName.addEventListener("click", () => {
+        roomDropdown.classList.toggle("active");
+        roomName.classList.toggle("room-dropdown-open");
+    });
+
+    // Sidebar option switching
+    sidebarOptions.forEach(option => {
+        option.addEventListener("click", () => {
+            // Remove active class from all options and sections
+            sidebarOptions.forEach(opt => opt.classList.remove("active"));
+            contentSections.forEach(section => section.classList.remove("active"));
+
+            // Add active class to clicked option and corresponding section
+            option.classList.add("active");
+            const contentId = option.getAttribute("data-content") + "-content";
+            document.getElementById(contentId).classList.add("active");
+        });
+    });
+
+    // Context menu for members
+    const contextMenu = document.getElementById("contextMenu");
+    let currentUser = null;
+
+    function showContextMenu(event, userName) {
+        currentUser = userName;
+        contextMenu.style.left = event.pageX + "px";
+        contextMenu.style.top = event.pageY + "px";
+        contextMenu.classList.add("show");
+    }
+
+    function assignRole() {
+        alert(`Assign role to ${currentUser}`);
+        contextMenu.classList.remove("show");
+    }
+
+    function removeUser() {
+        alert(`Remove ${currentUser}`);
+        contextMenu.classList.remove("show");
+    }
+
+    function kickUser() {
+        alert(`Kick ${currentUser}`);
+        contextMenu.classList.remove("show");
+    }
+
+    function banUser() {
+        alert(`Ban ${currentUser}`);
+        contextMenu.classList.remove("show");
+    }
+
+    // Image modal functions
+    function showImage(src) {
+        const modal = document.getElementById("imageModal");
+        const modalImage = document.getElementById("modalImage");
+        modalImage.src = src;
+        modal.classList.add("show");
+    }
+
+    function closeImageModal() {
+        document.getElementById("imageModal").classList.remove("show");
+    }
+
+    // Notes slideup
+    const notesBtn = document.getElementById("notesBtn");
+    notesBtn.addEventListener("click", () => {
+        document.getElementById("notesSlideup").classList.toggle("active");
+    });
+
+    const notes = [
+        "Don't forget group assignment due next week!",
+        "Revise Chapter 5 before Friday.",
+        "Prepare slides for the quantum presentation.",
+        "Admin will share practice problems tomorrow.",
+        "Check exam timetable posted in university portal."
+    ];
+    const notesList = document.getElementById("notesList");
+    notes.forEach(note => {
+        const li = document.createElement("li");
+        li.className = "note-card";
+        li.innerHTML = `
+            <div class="note-content">${note}</div>
+            <button class="upvote">↑</button>
+        `;
+        notesList.appendChild(li);
+    });
+
+    // Chat toggle
+    const chatToggle = document.getElementById("chatToggle");
+    const chatPanel = document.getElementById("chatPanel");
+    chatToggle.addEventListener("click", () => {
+        chatPanel.classList.add("active");
+    });
+
+    function closeChat() {
+        chatPanel.classList.remove("active");
+    }
+
+    // User slideup
+    function showUserSlideup(userName) {
+        document.getElementById("userName").textContent = userName;
+        document.getElementById("userSlideup").classList.add("active");
+    }
+
+    function closeSlideup(id) {
+        document.getElementById(id).classList.remove("active");
+    }
+
+    // Close all overlays if clicking outside
+    document.addEventListener("click", (e) => {
+        if (!roomName.contains(e.target) && !roomDropdown.contains(e.target)) {
+            roomDropdown.classList.remove("active");
+            roomName.classList.remove("room-dropdown-open");
+        }
+
+        if (!contextMenu.contains(e.target)) {
+            contextMenu.classList.remove("show");
+        }
+
+        if (!chatToggle.contains(e.target) && !chatPanel.contains(e.target)) {
+            chatPanel.classList.remove("active");
+        }
+
+        document.querySelectorAll(".room-slideup-panel.active").forEach(slideup => {
+            if (!slideup.contains(e.target) && !e.target.closest(".room-sidebar-btn")) {
+                slideup.classList.remove("active");
+            }
+        });
+
+        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+            profileDropdown.classList.remove("show");
+        }
+    });
+
+    // Close image modal on escape key
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeImageModal();
+        }
+    });
+</script>
+</body>
+</html>

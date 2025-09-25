@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyHive | login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <img src="SH-logo.png" alt="StudyHive Logo" class="logo">
+    </div>
+    <div class="header-center">
+      <a href="index.html">
+        <h1>StudyHive</h1>
+      </a>
+    </div>
+    <div class="header-right">
+      <a href="login.html" class="login-btn">Login</a>
+      <button id="darkModeToggle">🌙</button>
+    </div>
+  </header>
+
+  <!-- Login Section -->
+  <main class="login-page">
+    <section class="login-box">
+      <h2>Login</h2>
+      <form id="loginForm" class="signup-form">
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        </div>
+
+        <button type="submit" class="cta-btn">Login</button>
+      </form>
+
+      <p class="signup-hint">
+        New to StudyHive? <a href="signup.html">Create an account</a>
+      </p>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="about.html">Contact</a>
+    </div>
+    <p>© <span id="year"></span> StudyHive. All rights reserved.</p>
+  </footer>
+
+  <!-- Global Script -->
+  <script src="script.js"></script>
+  <script src="config.js"></script>
+  <!-- Inline Script for Page-specific Logic -->
+  <script>
+
+    // document.getElementById("loginForm").addEventListener("submit", function(event) {
+    //   event.preventDefault();
+    //
+    //   // Grab user input
+    //   const email = document.getElementById("email").value;
+    //   const password = document.getElementById("password").value;
+    //
+    //   // For now, just a simple redirect — backend validation will come later
+    //   if (email && password) {
+    //     window.location.href = "dashboard-room.html";
+    //   } else {
+    //     alert("Please enter email and password.");
+    //   }
+    // });
+
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const submitBtn = this.querySelector("button[type='submit']");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Logging In...";
+
+      fetch(`${BASE_URL}/user-controller/loginUser`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          userEmail: email,
+          userPassword: password,
+        })
+        // Remove credentials: "include" temporarily to test
+      })
+              .then(res => {
+                console.log("POST Response:", res);
+                console.log("Status:", res.status);
+
+                return res.text().then(text => {
+                  console.log("Raw response:", text);
+
+                  if (text === '') {
+                    throw new Error(`Server returned ${res.status} with no content`);
+                  }
+
+                  try {
+                    const data = JSON.parse(text);
+                    console.log("Parsed data:", data);
+
+                    if (!res.ok) {
+                      throw new Error(data.responseMessage || `Server error: ${res.status}`);
+                    }
+                    return data;
+                  } catch (parseError) {
+                    console.error("JSON parsing failed:", parseError);
+                    throw new Error(`Server returned: ${text}`);
+                  }
+                });
+              })
+              .then(data => {
+                console.log("Success:", data);
+                sessionStorage.setItem("userEmail", email);
+                window.location.href = "dashboard-room.html";
+              })
+              .catch(error => {
+                console.error("Error:", error);
+                alert(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Login";
+              });
+
+    })
+  </script>
+</body>
+</html>
