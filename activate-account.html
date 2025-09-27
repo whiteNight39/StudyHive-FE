@@ -48,8 +48,8 @@
         <div class="form-fields">
             <input type="text" id="userFirstName" placeholder="First Name" disabled>
             <input type="text" id="userLastName" placeholder="Last Name" disabled>
-            <input type="email" id="userEmail" placeholder="Email" disabled>
-            <button id="submitBtn" disabled>Submit</button>
+<!--            <input type="email" id="userEmail" placeholder="Email" disabled>-->
+            <button id="submitBtn" class="button" disabled>Submit</button>
         </div>
 
     </section>
@@ -64,63 +64,184 @@
     <p>© <span id="year"></span> StudyHive. All rights reserved.</p>
   </footer>
 
-  <script>
-    const reload = document.getElementById("reload");
-    const verifyBtn = document.getElementById("verifyBtn");
-    const tick = document.getElementById("tick");
+    <script src="config.js"></script>
 
-    const unameReload = document.getElementById("unameReload");
-    const unameVerifyBtn = document.getElementById("unameVerifyBtn");
-    const unameTick = document.getElementById("unameTick");
-    const userNameInput = document.getElementById("userName");
+    <script type="module">
+        import { faker } from 'https://cdn.jsdelivr.net/npm/@faker-js/faker@8.4.1/+esm';
 
-    const formFields = document.querySelectorAll(".form-fields input");
-    const unamefield = document.getElementById("userName");
-    const submitBtn = document.getElementById("submitBtn");
+        const reload = document.getElementById("reload");
+        const verifyBtn = document.getElementById("verifyBtn");
+        const tick = document.getElementById("tick");
 
-    // Spin reload animation
-    reload.addEventListener("click", () => {
-      reload.classList.add("spin");
-      setTimeout(() => reload.classList.remove("spin"), 500);
-      alert("New OTP has been sent!");
-    });
+        const unameReload = document.getElementById("unameReload");
+        const unameVerifyBtn = document.getElementById("unameVerifyBtn");
+        const unameTick = document.getElementById("unameTick");
+        const userNameInput = document.getElementById("userName");
 
-    // Username reload
-    unameReload.addEventListener("click", () => {
-        unameReload.classList.add("spin");
-        setTimeout(() => unameReload.classList.remove("spin"), 500);
-        alert("Reload username check!");
-    });
+        const formFields = document.querySelectorAll(".form-fields input");
+        const unamefield = document.getElementById("userName");
+        const submitBtn = document.getElementById("submitBtn");
 
-    // Verify OTP
-    verifyBtn.addEventListener("click", () => {
-      const otp = document.getElementById("otp").value;
-      if (otp === "1234") { // mock validation
-        tick.style.display = "inline";
-        unamefield.disabled = false;
-        alert("OTP Verified!");
-      } else {
-        alert("Invalid OTP, try again!");
-      }
-    });
+        // Username reload
+        unameReload.addEventListener("click", () => {
+            unameReload.classList.add("spin");
+            setTimeout(() => unameReload.classList.remove("spin"), 500);
 
-    // Username verify
-    unameVerifyBtn.addEventListener("click", () => {
-        if (userNameInput.value.trim() !== "") { // mock validation
-            unameTick.style.display = "inline";
-            formFields.forEach(f => f.disabled = false);
-            submitBtn.disabled = false;
-            alert("Username verified!");
-        } else {
-            alert("Please enter a username first.");
-        }
-    });
+            const randomUsername = `${faker.hacker.adjective()}${faker.animal.type()}${faker.number.int({min: 10000, max: 99999})}`;
+            userNameInput.value = randomUsername;
+        });
 
-    // Submit form
-    submitBtn.addEventListener("click", () => {
-      alert("Your profile has been successfully created. Kindly login.");
-      window.location.href = "login.html";
-    });
+        reload.addEventListener("click", function(event) {
+            event.preventDefault();
+            reload.classList.add("spin");
+
+            const email = sessionStorage.getItem("userEmail");
+
+            fetch(`${BASE_URL}/user/resend-user-otp?userEmail=${encodeURIComponent(email)}`, {
+                method: "POST"
+            })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            throw new Error(data.responseMessage || "Failed to resend OTP");
+                        }
+                        return data;
+                    });
+                })
+                .then(data => {
+                    setTimeout(() => reload.classList.remove("spin"), 500);
+                    alert("A new OTP has been resent to your email. Please verify to activate your account.");
+                })
+                .catch(error => {
+                    reload.classList.remove("spin");
+                    alert(error.message);
+                });
+        });
+
+        // Verify OTP
+        verifyBtn.addEventListener("click", () => {
+            const otp = document.getElementById("otp").value;
+            const email = sessionStorage.getItem("userEmail");
+            console.log(email);
+
+            if (!otp) {
+                alert("Please enter an otp first.");
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = "Verifying Otp...";
+
+            fetch(`${BASE_URL}/user/complete-user-signup`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    userEmail: email,
+                    otp: otp
+                })
+            })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            throw new Error(data.responseMessage || "Failed to verify otp");
+                        }
+                        return data;
+                    });
+                })
+                .then(data => {
+                    tick.style.display = "inline";
+                    unamefield.disabled = false;
+                    alert("OTP Verified!");
+                })
+                .catch(error => {
+                    alert(error.message);
+                    verifyBtn.disabled = false;
+                    verifyBtn.textContent = "Verify";
+                });
+        });
+
+
+        // Username verify
+        unameVerifyBtn.addEventListener("click", () => {
+
+            const userName = userNameInput.value.trim();
+
+            if (!userName) {
+                alert("Please enter a username first.");
+                return;
+            }
+
+            fetch(`${BASE_URL}/user/verify-unique-username?userName=${encodeURIComponent(userName)}`, {
+                method: "GET"
+            })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            throw new Error(data.responseMessage || "Failed to verify username");
+                        }
+                        return data;
+                    });
+                })
+                .then(data => {
+                    if (data.responseCode === "00") {
+                        unameTick.style.display = "inline";
+                        formFields.forEach(f => f.disabled = false);
+                        submitBtn.disabled = false;
+                        alert("Username verified!");
+                        // Save in sessionStorage only after it's valid
+                        sessionStorage.setItem("userName", userName);
+                    } else {
+                        alert(data.responseMessage);
+                    }
+                })
+                .catch(error => {
+                    alert(error.message);
+                    unameVerifyBtn.disabled = false;
+                    unameVerifyBtn.textContent = "Verify";
+                });
+
+        });
+
+        // Submit form
+        submitBtn.addEventListener("click", () => {
+
+            const userName = userNameInput.value.trim();
+            const userFirstName = document.getElementById("userFirstName").value;
+            const userLastName = document.getElementById("userLastName").value;
+            const userEmail = sessionStorage.getItem("userEmail");
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Creating Profile...";
+
+            fetch(`${BASE_URL}/user/complete-user-profile`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    userName: userName,
+                    userFirstName: userFirstName,
+                    userLastName: userLastName,
+                    userEmail: userEmail,
+                })
+            })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (!response.ok) {
+                            throw new Error(data.responseMessage || "Failed to create profile");
+                        }
+                        return data;
+                    });
+                })
+                .then(data => {
+                    alert("Your profile has been successfully created. Kindly login.");
+                    window.location.href = "login.html";
+                })
+                .catch(error => {
+                    alert(error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Submit";
+                });
+
+        });
   </script>
 </body>
 </html>

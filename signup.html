@@ -35,7 +35,10 @@
 
         <div class="form-group">
           <label for="password">Password:</label>
-          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+          <div class="password-wrapper">
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <button type="button" id="togglePassword" class="toggle-password">👁</button>
+          </div>
         </div>
 
         <button type="submit" class="button">Sign Up</button>
@@ -72,7 +75,7 @@
       submitBtn.disabled = true;
       submitBtn.textContent = "Creating Account...";
 
-      fetch(`${BASE_URL}/user-controller/initiateUserSignup`, {
+      fetch(`${BASE_URL}/user/initiate-user-signup`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -89,6 +92,10 @@
                 });
               })
               .then(data => {
+                console.log("Saving email:", email);
+                sessionStorage.setItem("userEmail", email);
+                console.log("Saved:", sessionStorage.getItem("userEmail"));
+
                 alert("An OTP has been sent to your email. Please verify to activate your account.");
                 window.location.href = "activate-account.html";
               })
@@ -97,6 +104,15 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Sign Up";
               });
+    });
+
+    document.getElementById("togglePassword").addEventListener("click", function () {
+      const passwordField = document.getElementById("password");
+      const isPassword = passwordField.type === "password";
+      passwordField.type = isPassword ? "text" : "password";
+
+      // Optional: change icon depending on state
+      this.textContent = isPassword ? "🙈" : "👁";
     });
   </script>
 </body>
