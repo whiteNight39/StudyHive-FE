@@ -78,8 +78,11 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p><a href="about.html">About</a> | <a href="about.html">Contact</a></p>
-        <p>&copy; 2025 StudyHive. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="about.html">Contact</a>
+        </div>
+        <p>© <span id="year"></span> StudyHive. All rights reserved.</p>
     </footer>
 
     <!-- Slide-up: User Profile -->
@@ -133,181 +136,183 @@
     <!--    &lt;!&ndash; Search Results Dropdown &ndash;&gt;-->
 <!--    <ul id="searchResults" class="search-dropdown"></ul>-->
 
-<script>
-    // Dark mode toggle
-    const darkToggle = document.getElementById("darkModeToggle");
-    darkToggle.addEventListener("click", () => {
-        document.body.classList.toggle("dark-mode");
-        localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
-    });
-    if (localStorage.getItem("theme") === "dark") {
-        document.body.classList.add("dark-mode");
-    }
-
-    // Profile dropdown toggle
-    document.querySelector(".profile-btn").addEventListener("click", () => {
-        document.querySelector(".profile-dropdown").classList.toggle("show");
-    });
-
-    // Profile dropdown toggle
-    const profileBtn = document.querySelector(".profile-btn");
-    const profileDropdown = document.querySelector(".profile-dropdown");
-
-    // Close dropdown if click outside
-    document.addEventListener("click", (e) => {
-        if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
-            profileDropdown.classList.remove("show");
-        }
-    });
-
-    // Dummy data
-    const dummyUsers = ["StudyHive_TestUser1", "StudyHive_TestUser2", "StudyHive_TestUser3"];
-    const dummyRooms = [
-        {
-            roomName: "StudyHive_TestRoom1",
-            roomDescription: "Room 1 for testing",
-            roomCapacity: 30,
-            roomCreatedByUserName: "StudyHive_TestUser1",
-            roomCreatedAt: new Date().toLocaleString()
-        },
-        {
-            roomName: "StudyHive_TestRoom2",
-            roomDescription: "Room 2 for testing",
-            roomCapacity: 50,
-            roomCreatedByUserName: "StudyHive_TestUser1",
-            roomCreatedAt: new Date().toLocaleString()
-        },
-        {
-            roomName: "StudyHive_TestRoom3",
-            roomDescription: "Room 3 for testing",
-            roomCapacity: 100,
-            roomCreatedByUserName: "StudyHive_TestUser1",
-            roomCreatedAt: new Date().toLocaleString()
-        }
-    ];
-
-    const searchInput = document.getElementById("searchInput");
-    const searchType = document.getElementById("searchType");
-    const searchResults = document.getElementById("searchResults");
-
-    // Handle search input (keyup simulation)
-    searchInput.addEventListener("keyup", () => {
-        const query = searchInput.value.toLowerCase();
-        searchResults.innerHTML = "";
-
-        if (!query) return;
-
-        if (searchType.value === "user") {
-            const matches = dummyUsers.filter(u => u.toLowerCase().includes(query));
-            matches.forEach(user => {
-                const li = document.createElement("li");
-                li.textContent = user;
-                li.onclick = (e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    showUserSlideup(user);
-                };
-                searchResults.appendChild(li);
-            });
-        } else if (searchType.value === "room") {
-            const matches = dummyRooms.filter(r => r.roomName.toLowerCase().includes(query));
-            matches.forEach(room => {
-                const li = document.createElement("li");
-                li.textContent = room.roomName;
-                li.onclick = (e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    showRoomSlideup(room);
-                };
-                searchResults.appendChild(li);
-            });
-        }
-    });
-
-    // User Slideup
-    function showUserSlideup(userName) {
-        document.getElementById("userName").textContent = userName;
-        document.getElementById("userSlideup").classList.add("active");
-        searchResults.innerHTML = "";
-
-        // Message button → go to chat
-        document.getElementById("messageUserBtn").onclick = () => {
-            localStorage.setItem("userName", userName);
-            window.location.href = "chat.html";
-        };
-    }
-
-    // Room Slideup
-    function showRoomSlideup(room) {
-        document.getElementById("roomName").textContent = room.roomName;
-        document.getElementById("roomDescription").textContent = room.roomDescription;
-        document.getElementById("roomCapacity").textContent = room.roomCapacity;
-        document.getElementById("roomCreator").textContent = room.roomCreatedByUserName;
-        document.getElementById("roomCreatedAt").textContent = room.roomCreatedAt;
-
-        const joinBtn = document.getElementById("joinRoomBtn");
-        const viewBtn = document.getElementById("viewRoomBtn");
-
-        joinBtn.disabled = false;
-        viewBtn.disabled = true;
-
-        joinBtn.onclick = () => {
-            alert("You have joined " + room.roomName);
-            joinBtn.disabled = true;
-            viewBtn.disabled = false;
-        };
-
-        viewBtn.onclick = () => {
-            window.location.href = "dashboard-viewroom.html";
-        };
-
-        document.getElementById("roomSlideup").classList.add("active");
-        searchResults.innerHTML = "";
-    }
-
-    // Close slideup
-    function closeSlideup(id) {
-        document.getElementById(id).classList.remove("active");
-    }
-
-    // Open Create Room Slideup
-    document.getElementById("openCreateRoomBtn").onclick = (e) => {
-        e.stopPropagation(); // Prevent event bubbling
-        document.getElementById("createRoomSlideup").classList.toggle("active");
-    };
-
-    // Handle Create Room form submission
-    document.getElementById("createRoomForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        const name = document.getElementById("newRoomName").value;
-        const desc = document.getElementById("newRoomDescription").value;
-        const privacy = document.getElementById("newRoomPrivacy").value;
-
-        alert(`Room "${name}" created!\nPrivacy: ${privacy}`);
-
-        // Optionally: reset form & close slideup
-        e.target.reset();
-        closeSlideup("createRoomSlideup");
-    });
-
-    // Replace your existing "Close all slideups when clicking outside" code with this:
-    document.addEventListener("click", (e) => {
-        // Don't close if clicking on any slideup trigger elements
-        if (e.target.closest("#openCreateRoomBtn") ||
-            e.target.closest("#searchResults") ||
-            e.target.closest(".search-dropdown")) {
-            return;
+    <script src="script.js"></script>
+    <script src="config.js"></script>
+    <script>
+        // Dark mode toggle
+        const darkToggle = document.getElementById("darkModeToggle");
+        darkToggle.addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+            localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+        });
+        if (localStorage.getItem("theme") === "dark") {
+            document.body.classList.add("dark-mode");
         }
 
-        document.querySelectorAll(".slideup-panel.active").forEach(panel => {
-            const content = panel.querySelector(".slideup-content");
-            // Close if click is outside the slideup content
-            if (!content.contains(e.target)) {
-                panel.classList.remove("active");
+        // Profile dropdown toggle
+        document.querySelector(".profile-btn").addEventListener("click", () => {
+            document.querySelector(".profile-dropdown").classList.toggle("show");
+        });
+
+        // Profile dropdown toggle
+        const profileBtn = document.querySelector(".profile-btn");
+        const profileDropdown = document.querySelector(".profile-dropdown");
+
+        // Close dropdown if click outside
+        document.addEventListener("click", (e) => {
+            if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+                profileDropdown.classList.remove("show");
             }
         });
-    });
+
+        // Dummy data
+        const dummyUsers = ["StudyHive_TestUser1", "StudyHive_TestUser2", "StudyHive_TestUser3"];
+        const dummyRooms = [
+            {
+                roomName: "StudyHive_TestRoom1",
+                roomDescription: "Room 1 for testing",
+                roomCapacity: 30,
+                roomCreatedByUserName: "StudyHive_TestUser1",
+                roomCreatedAt: new Date().toLocaleString()
+            },
+            {
+                roomName: "StudyHive_TestRoom2",
+                roomDescription: "Room 2 for testing",
+                roomCapacity: 50,
+                roomCreatedByUserName: "StudyHive_TestUser1",
+                roomCreatedAt: new Date().toLocaleString()
+            },
+            {
+                roomName: "StudyHive_TestRoom3",
+                roomDescription: "Room 3 for testing",
+                roomCapacity: 100,
+                roomCreatedByUserName: "StudyHive_TestUser1",
+                roomCreatedAt: new Date().toLocaleString()
+            }
+        ];
+
+        const searchInput = document.getElementById("searchInput");
+        const searchType = document.getElementById("searchType");
+        const searchResults = document.getElementById("searchResults");
+
+        // Handle search input (keyup simulation)
+        searchInput.addEventListener("keyup", () => {
+            const query = searchInput.value.toLowerCase();
+            searchResults.innerHTML = "";
+
+            if (!query) return;
+
+            if (searchType.value === "user") {
+                const matches = dummyUsers.filter(u => u.toLowerCase().includes(query));
+                matches.forEach(user => {
+                    const li = document.createElement("li");
+                    li.textContent = user;
+                    li.onclick = (e) => {
+                        e.stopPropagation(); // Prevent event bubbling
+                        showUserSlideup(user);
+                    };
+                    searchResults.appendChild(li);
+                });
+            } else if (searchType.value === "room") {
+                const matches = dummyRooms.filter(r => r.roomName.toLowerCase().includes(query));
+                matches.forEach(room => {
+                    const li = document.createElement("li");
+                    li.textContent = room.roomName;
+                    li.onclick = (e) => {
+                        e.stopPropagation(); // Prevent event bubbling
+                        showRoomSlideup(room);
+                    };
+                    searchResults.appendChild(li);
+                });
+            }
+        });
+
+        // User Slideup
+        function showUserSlideup(userName) {
+            document.getElementById("userName").textContent = userName;
+            document.getElementById("userSlideup").classList.add("active");
+            searchResults.innerHTML = "";
+
+            // Message button → go to chat
+            document.getElementById("messageUserBtn").onclick = () => {
+                localStorage.setItem("userName", userName);
+                window.location.href = "chat.html";
+            };
+        }
+
+        // Room Slideup
+        function showRoomSlideup(room) {
+            document.getElementById("roomName").textContent = room.roomName;
+            document.getElementById("roomDescription").textContent = room.roomDescription;
+            document.getElementById("roomCapacity").textContent = room.roomCapacity;
+            document.getElementById("roomCreator").textContent = room.roomCreatedByUserName;
+            document.getElementById("roomCreatedAt").textContent = room.roomCreatedAt;
+
+            const joinBtn = document.getElementById("joinRoomBtn");
+            const viewBtn = document.getElementById("viewRoomBtn");
+
+            joinBtn.disabled = false;
+            viewBtn.disabled = true;
+
+            joinBtn.onclick = () => {
+                alert("You have joined " + room.roomName);
+                joinBtn.disabled = true;
+                viewBtn.disabled = false;
+            };
+
+            viewBtn.onclick = () => {
+                window.location.href = "dashboard-viewroom.html";
+            };
+
+            document.getElementById("roomSlideup").classList.add("active");
+            searchResults.innerHTML = "";
+        }
+
+        // Close slideup
+        function closeSlideup(id) {
+            document.getElementById(id).classList.remove("active");
+        }
+
+        // Open Create Room Slideup
+        document.getElementById("openCreateRoomBtn").onclick = (e) => {
+            e.stopPropagation(); // Prevent event bubbling
+            document.getElementById("createRoomSlideup").classList.toggle("active");
+        };
+
+        // Handle Create Room form submission
+        document.getElementById("createRoomForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById("newRoomName").value;
+            const desc = document.getElementById("newRoomDescription").value;
+            const privacy = document.getElementById("newRoomPrivacy").value;
+
+            alert(`Room "${name}" created!\nPrivacy: ${privacy}`);
+
+            // Optionally: reset form & close slideup
+            e.target.reset();
+            closeSlideup("createRoomSlideup");
+        });
+
+        // Replace your existing "Close all slideups when clicking outside" code with this:
+        document.addEventListener("click", (e) => {
+            // Don't close if clicking on any slideup trigger elements
+            if (e.target.closest("#openCreateRoomBtn") ||
+                e.target.closest("#searchResults") ||
+                e.target.closest(".search-dropdown")) {
+                return;
+            }
+
+            document.querySelectorAll(".slideup-panel.active").forEach(panel => {
+                const content = panel.querySelector(".slideup-content");
+                // Close if click is outside the slideup content
+                if (!content.contains(e.target)) {
+                    panel.classList.remove("active");
+                }
+            });
+        });
 
 
-</script>
+    </script>
 </body>
 </html>
