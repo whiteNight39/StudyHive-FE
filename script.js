@@ -41,3 +41,21 @@ function getCookie(name) {
   }
   return null;
 }
+
+const logOutBtn = document.getElementById("logOutBtn");
+
+if (logOutBtn) {
+  logOutBtn.addEventListener("click", () => {
+    sessionStorage.clear();
+
+    // Clear all cookies
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date(0).toUTCString() + ";path=/");
+    });
+
+    // Redirect to login page after logout
+    window.location.href = "login.html";
+  });
+}
