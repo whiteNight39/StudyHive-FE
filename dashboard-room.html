@@ -50,11 +50,13 @@
             <!-- Sidebar -->
             <aside class="sidebar">
                 <button id="openCreateRoomBtn" class="sidebar-btn">Create Room</button>
-                <button class="sidebar-btn">Rooms</button>
+                <button id="showRoomsBtn" class="sidebar-btn active">Rooms</button>
                 <button class="sidebar-btn" onclick="window.location.href='chat.html'">Chat</button>
+                <button id="showLocationBtn" class="sidebar-btn">Verify Location</button>
             </aside>
 
-            <section class="room-list">
+            <!-- Room List Section -->
+            <section id="roomListSection" class="room-list">
                 <div class="room-card" onclick="window.location.href='dashboard-viewroom.html'">
                     <h3>Quantum Mechanics Study</h3>
                     <p>Dive into wave functions and operators together.</p>
@@ -71,6 +73,19 @@
                     <h3>Exam Prep Hive</h3>
                     <p>Group revision for upcoming finals. Join in!</p>
                     <span class="capacity">25/50 members</span>
+                </div>
+            </section>
+
+            <!-- Location Verification Section -->
+            <section id="locationSection" class="location-verification" style="display: none;">
+                <div class="location-container">
+                    <div class="location-icon">📍</div>
+                    <h2>Location Verification</h2>
+                    <p class="location-subtitle">Verify your current location to access location-based study rooms</p>
+
+                    <button id="verifyLocationBtn" class="cta-btn">Verify My Location</button>
+
+                    <div id="locationDetails" class="location-details"></div>
                 </div>
             </section>
         </main>
@@ -135,184 +150,374 @@
 
     <!--    &lt;!&ndash; Search Results Dropdown &ndash;&gt;-->
 <!--    <ul id="searchResults" class="search-dropdown"></ul>-->
+</body>
+<script src="script.js"></script>
+<script src="config.js"></script>
+<script>
+    // Dark mode toggle
+    const darkToggle = document.getElementById("darkModeToggle");
+    darkToggle.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+    });
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
 
-    <script src="script.js"></script>
-    <script src="config.js"></script>
-    <script>
-        // Dark mode toggle
-        const darkToggle = document.getElementById("darkModeToggle");
-        darkToggle.addEventListener("click", () => {
-            document.body.classList.toggle("dark-mode");
-            localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
-        });
-        if (localStorage.getItem("theme") === "dark") {
-            document.body.classList.add("dark-mode");
+    // Profile dropdown toggle
+    document.querySelector(".profile-btn").addEventListener("click", () => {
+        document.querySelector(".profile-dropdown").classList.toggle("show");
+    });
+
+    // Profile dropdown toggle
+    const profileBtn = document.querySelector(".profile-btn");
+    const profileDropdown = document.querySelector(".profile-dropdown");
+
+    // Close dropdown if click outside
+    document.addEventListener("click", (e) => {
+        if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+            profileDropdown.classList.remove("show");
         }
+    });
 
-        // Profile dropdown toggle
-        document.querySelector(".profile-btn").addEventListener("click", () => {
-            document.querySelector(".profile-dropdown").classList.toggle("show");
-        });
-
-        // Profile dropdown toggle
-        const profileBtn = document.querySelector(".profile-btn");
-        const profileDropdown = document.querySelector(".profile-dropdown");
-
-        // Close dropdown if click outside
-        document.addEventListener("click", (e) => {
-            if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
-                profileDropdown.classList.remove("show");
-            }
-        });
-
-        // Dummy data
-        const dummyUsers = ["StudyHive_TestUser1", "StudyHive_TestUser2", "StudyHive_TestUser3"];
-        const dummyRooms = [
-            {
-                roomName: "StudyHive_TestRoom1",
-                roomDescription: "Room 1 for testing",
-                roomCapacity: 30,
-                roomCreatedByUserName: "StudyHive_TestUser1",
-                roomCreatedAt: new Date().toLocaleString()
-            },
-            {
-                roomName: "StudyHive_TestRoom2",
-                roomDescription: "Room 2 for testing",
-                roomCapacity: 50,
-                roomCreatedByUserName: "StudyHive_TestUser1",
-                roomCreatedAt: new Date().toLocaleString()
-            },
-            {
-                roomName: "StudyHive_TestRoom3",
-                roomDescription: "Room 3 for testing",
-                roomCapacity: 100,
-                roomCreatedByUserName: "StudyHive_TestUser1",
-                roomCreatedAt: new Date().toLocaleString()
-            }
-        ];
-
-        const searchInput = document.getElementById("searchInput");
-        const searchType = document.getElementById("searchType");
-        const searchResults = document.getElementById("searchResults");
-
-        // Handle search input (keyup simulation)
-        searchInput.addEventListener("keyup", () => {
-            const query = searchInput.value.toLowerCase();
-            searchResults.innerHTML = "";
-
-            if (!query) return;
-
-            if (searchType.value === "user") {
-                const matches = dummyUsers.filter(u => u.toLowerCase().includes(query));
-                matches.forEach(user => {
-                    const li = document.createElement("li");
-                    li.textContent = user;
-                    li.onclick = (e) => {
-                        e.stopPropagation(); // Prevent event bubbling
-                        showUserSlideup(user);
-                    };
-                    searchResults.appendChild(li);
-                });
-            } else if (searchType.value === "room") {
-                const matches = dummyRooms.filter(r => r.roomName.toLowerCase().includes(query));
-                matches.forEach(room => {
-                    const li = document.createElement("li");
-                    li.textContent = room.roomName;
-                    li.onclick = (e) => {
-                        e.stopPropagation(); // Prevent event bubbling
-                        showRoomSlideup(room);
-                    };
-                    searchResults.appendChild(li);
-                });
-            }
-        });
-
-        // User Slideup
-        function showUserSlideup(userName) {
-            document.getElementById("userName").textContent = userName;
-            document.getElementById("userSlideup").classList.add("active");
-            searchResults.innerHTML = "";
-
-            // Message button → go to chat
-            document.getElementById("messageUserBtn").onclick = () => {
-                localStorage.setItem("userName", userName);
-                window.location.href = "chat.html";
-            };
+    // Dummy data
+    const dummyUsers = ["StudyHive_TestUser1", "StudyHive_TestUser2", "StudyHive_TestUser3"];
+    const dummyRooms = [
+        {
+            roomName: "StudyHive_TestRoom1",
+            roomDescription: "Room 1 for testing",
+            roomCapacity: 30,
+            roomCreatedByUserName: "StudyHive_TestUser1",
+            roomCreatedAt: new Date().toLocaleString()
+        },
+        {
+            roomName: "StudyHive_TestRoom2",
+            roomDescription: "Room 2 for testing",
+            roomCapacity: 50,
+            roomCreatedByUserName: "StudyHive_TestUser1",
+            roomCreatedAt: new Date().toLocaleString()
+        },
+        {
+            roomName: "StudyHive_TestRoom3",
+            roomDescription: "Room 3 for testing",
+            roomCapacity: 100,
+            roomCreatedByUserName: "StudyHive_TestUser1",
+            roomCreatedAt: new Date().toLocaleString()
         }
+    ];
 
-        // Room Slideup
-        function showRoomSlideup(room) {
-            document.getElementById("roomName").textContent = room.roomName;
-            document.getElementById("roomDescription").textContent = room.roomDescription;
-            document.getElementById("roomCapacity").textContent = room.roomCapacity;
-            document.getElementById("roomCreator").textContent = room.roomCreatedByUserName;
-            document.getElementById("roomCreatedAt").textContent = room.roomCreatedAt;
+    const searchInput = document.getElementById("searchInput");
+    const searchType = document.getElementById("searchType");
+    const searchResults = document.getElementById("searchResults");
 
-            const joinBtn = document.getElementById("joinRoomBtn");
-            const viewBtn = document.getElementById("viewRoomBtn");
+    // Handle search input (keyup simulation)
+    searchInput.addEventListener("keyup", () => {
+        const query = searchInput.value.toLowerCase();
+        searchResults.innerHTML = "";
 
-            joinBtn.disabled = false;
-            viewBtn.disabled = true;
+        if (!query) return;
 
-            joinBtn.onclick = () => {
-                alert("You have joined " + room.roomName);
-                joinBtn.disabled = true;
-                viewBtn.disabled = false;
-            };
-
-            viewBtn.onclick = () => {
-                window.location.href = "dashboard-viewroom.html";
-            };
-
-            document.getElementById("roomSlideup").classList.add("active");
-            searchResults.innerHTML = "";
+        if (searchType.value === "user") {
+            const matches = dummyUsers.filter(u => u.toLowerCase().includes(query));
+            matches.forEach(user => {
+                const li = document.createElement("li");
+                li.textContent = user;
+                li.onclick = (e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    showUserSlideup(user);
+                };
+                searchResults.appendChild(li);
+            });
+        } else if (searchType.value === "room") {
+            const matches = dummyRooms.filter(r => r.roomName.toLowerCase().includes(query));
+            matches.forEach(room => {
+                const li = document.createElement("li");
+                li.textContent = room.roomName;
+                li.onclick = (e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    showRoomSlideup(room);
+                };
+                searchResults.appendChild(li);
+            });
         }
+    });
 
-        // Close slideup
-        function closeSlideup(id) {
-            document.getElementById(id).classList.remove("active");
-        }
+    // User Slideup
+    function showUserSlideup(userName) {
+        document.getElementById("userName").textContent = userName;
+        document.getElementById("userSlideup").classList.add("active");
+        searchResults.innerHTML = "";
 
-        // Open Create Room Slideup
-        document.getElementById("openCreateRoomBtn").onclick = (e) => {
-            e.stopPropagation(); // Prevent event bubbling
-            document.getElementById("createRoomSlideup").classList.toggle("active");
+        // Message button → go to chat
+        document.getElementById("messageUserBtn").onclick = () => {
+            localStorage.setItem("userName", userName);
+            window.location.href = "chat.html";
+        };
+    }
+
+    // Room Slideup
+    function showRoomSlideup(room) {
+        document.getElementById("roomName").textContent = room.roomName;
+        document.getElementById("roomDescription").textContent = room.roomDescription;
+        document.getElementById("roomCapacity").textContent = room.roomCapacity;
+        document.getElementById("roomCreator").textContent = room.roomCreatedByUserName;
+        document.getElementById("roomCreatedAt").textContent = room.roomCreatedAt;
+
+        const joinBtn = document.getElementById("joinRoomBtn");
+        const viewBtn = document.getElementById("viewRoomBtn");
+
+        joinBtn.disabled = false;
+        viewBtn.disabled = true;
+
+        joinBtn.onclick = () => {
+            alert("You have joined " + room.roomName);
+            joinBtn.disabled = true;
+            viewBtn.disabled = false;
         };
 
-        // Handle Create Room form submission
-        document.getElementById("createRoomForm").addEventListener("submit", (e) => {
-            e.preventDefault();
+        viewBtn.onclick = () => {
+            window.location.href = "dashboard-viewroom.html";
+        };
 
-            const name = document.getElementById("newRoomName").value;
-            const desc = document.getElementById("newRoomDescription").value;
-            const privacy = document.getElementById("newRoomPrivacy").value;
+        document.getElementById("roomSlideup").classList.add("active");
+        searchResults.innerHTML = "";
+    }
 
-            alert(`Room "${name}" created!\nPrivacy: ${privacy}`);
+    // Close slideup
+    function closeSlideup(id) {
+        document.getElementById(id).classList.remove("active");
+    }
 
-            // Optionally: reset form & close slideup
-            e.target.reset();
-            closeSlideup("createRoomSlideup");
-        });
+    // Open Create Room Slideup
+    document.getElementById("openCreateRoomBtn").onclick = (e) => {
+        e.stopPropagation(); // Prevent event bubbling
+        document.getElementById("createRoomSlideup").classList.toggle("active");
+    };
 
-        // Replace your existing "Close all slideups when clicking outside" code with this:
-        document.addEventListener("click", (e) => {
-            // Don't close if clicking on any slideup trigger elements
-            if (e.target.closest("#openCreateRoomBtn") ||
-                e.target.closest("#searchResults") ||
-                e.target.closest(".search-dropdown")) {
-                return;
+    // Handle Create Room form submission
+    document.getElementById("createRoomForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("newRoomName").value;
+        const desc = document.getElementById("newRoomDescription").value;
+        const privacy = document.getElementById("newRoomPrivacy").value;
+
+        alert(`Room "${name}" created!\nPrivacy: ${privacy}`);
+
+        // Optionally: reset form & close slideup
+        e.target.reset();
+        closeSlideup("createRoomSlideup");
+    });
+
+    // Replace your existing "Close all slideups when clicking outside" code with this:
+    document.addEventListener("click", (e) => {
+        // Don't close if clicking on any slideup trigger elements
+        if (e.target.closest("#openCreateRoomBtn") ||
+            e.target.closest("#searchResults") ||
+            e.target.closest(".search-dropdown")) {
+            return;
+        }
+
+        document.querySelectorAll(".slideup-panel.active").forEach(panel => {
+            const content = panel.querySelector(".slideup-content");
+            // Close if click is outside the slideup content
+            if (!content.contains(e.target)) {
+                panel.classList.remove("active");
             }
-
-            document.querySelectorAll(".slideup-panel.active").forEach(panel => {
-                const content = panel.querySelector(".slideup-content");
-                // Close if click is outside the slideup content
-                if (!content.contains(e.target)) {
-                    panel.classList.remove("active");
-                }
-            });
         });
+    });
 
+    // Section switching functionality
+    const roomListSection = document.getElementById('roomListSection');
+    const locationSection = document.getElementById('locationSection');
+    const showRoomsBtn = document.getElementById('showRoomsBtn');
+    const showLocationBtn = document.getElementById('showLocationBtn');
 
-    </script>
-</body>
+    // Show Rooms section
+    showRoomsBtn.addEventListener('click', function() {
+        roomListSection.style.display = 'grid';
+        locationSection.style.display = 'none';
+        showRoomsBtn.classList.add('active');
+        showLocationBtn.classList.remove('active');
+    });
+
+    // Show Location section
+    showLocationBtn.addEventListener('click', function() {
+        roomListSection.style.display = 'none';
+        locationSection.style.display = 'flex';
+        showLocationBtn.classList.add('active');
+        showRoomsBtn.classList.remove('active');
+    });
+
+    const fixedLat = Number(sessionStorage.getItem("fixedLat"));
+    const fixedLon = Number(sessionStorage.getItem("fixedLon"));
+    const timeStampLoggedIn = sessionStorage.getItem("timeStamp");
+
+    // Verify Location button handler
+    document.getElementById('verifyLocationBtn').addEventListener('click', function() {
+        const locationDetails = document.getElementById('locationDetails');
+
+        if (navigator.geolocation) {
+            locationDetails.innerHTML = '<p>🔄 Requesting location access...</p>';
+
+            navigator.geolocation.getCurrentPosition(
+                async function (position) {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lon = position.coords.longitude.toFixed(6);
+                    const accuracy = position.coords.accuracy.toFixed(6);
+                    const timeStampLocationCheck = new Date().toISOString();
+
+                    const userAddress = await getAddressFromCoordinates(lat, lon);
+                    const lectureAddress = await getAddressFromCoordinates(fixedLat, fixedLon);
+
+                    fetch(`${BASE_URL}/user/confirm-user-location`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            "Authorization": `Bearer ${getCookie("jwt")}`
+                        },
+                        body: JSON.stringify({
+                            fixedLatitude: fixedLat,
+                            fixedLongitude: fixedLon,
+                            accuracy: accuracy,
+                            timeStampLocationCheck: timeStampLocationCheck,
+                            timeStampLoggedIn: timeStampLoggedIn,
+                            currentLatitude: Number(lat),
+                            currentLongitude: Number(lon)
+                        })
+                    })
+                        .then(res => {
+                            console.log("Full Response", res);
+                            return res.json();
+                        })
+                        .then(data => {
+                            console.log("Location verification response: ", data);
+
+                            if (data.responseCode === "66") {
+                                // Timestamp expired
+                                locationDetails.innerHTML =
+                                    `<h3>⏰ Check-in Failed</h3>
+                                <p style="color: #f44336; margin-bottom: 1.5rem;">You passed the allowed time window.</p>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <h4>📍 Your Current Position</h4>
+                                    <p><strong>Latitude:</strong> ${lat}</p>
+                                    <p><strong>Longitude:</strong> ${lon}</p>
+                                    <p><strong>Address:</strong> ${userAddress}</p>
+                                </div>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <h4>🏫 Lecture Location</h4>
+                                    <p><strong>Latitude:</strong> ${fixedLat}</p>
+                                    <p><strong>Longitude:</strong> ${fixedLon}</p>
+                                    <p><strong>Address:</strong> ${lectureAddress}</p>
+                                </div>
+
+                                <div style="border-top: 1px solid #ccc; padding-top: 1rem;">
+                                    <p><strong>Your distance from lecture:</strong> ${data.responseData.distanceFromClass.toFixed(2)} m</p>
+                                    <p><strong>Allowed threshold:</strong> ${data.responseData.threshold} m</p>
+                                </div>`;
+                            } else if (data.responseCode === "77") {
+                                // Too far
+                                locationDetails.innerHTML =
+                                    `<h3>📍 Check-in Failed</h3>
+                                <p style="color: #f44336; margin-bottom: 1.5rem;">You are too far from the lecture location.</p>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <h4>📍 Your Current Position</h4>
+                                    <p><strong>Latitude:</strong> ${lat}</p>
+                                    <p><strong>Longitude:</strong> ${lon}</p>
+                                    <p><strong>Address:</strong> ${userAddress}</p>
+                                </div>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <h4>🏫 Lecture Location</h4>
+                                    <p><strong>Latitude:</strong> ${fixedLat}</p>
+                                    <p><strong>Longitude:</strong> ${fixedLon}</p>
+                                    <p><strong>Address:</strong> ${lectureAddress}</p>
+                                </div>
+
+                                <div style="border-top: 1px solid #ccc; padding-top: 1rem;">
+                                    <p><strong>Your distance from lecture:</strong> ${data.responseData.distanceFromClass.toFixed(2)} m</p>
+                                    <p><strong>Allowed threshold:</strong> ${data.responseData.threshold} m</p>
+                                </div>`;
+                            } else if (data.responseCode === "00") {
+                                // Success
+                                locationDetails.innerHTML = `
+                                <h3>✅ Check-in Successful</h3>
+                                <p style="color: #4CAF50; margin-bottom: 1.5rem;">Your location has been verified successfully!</p>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <h4>📍 Your Current Position</h4>
+                                    <p><strong>Latitude:</strong> ${lat}</p>
+                                    <p><strong>Longitude:</strong> ${lon}</p>
+                                    <p><strong>Address:</strong> ${userAddress}</p>
+                                </div>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <h4>🏫 Lecture Location</h4>
+                                    <p><strong>Latitude:</strong> ${fixedLat}</p>
+                                    <p><strong>Longitude:</strong> ${fixedLon}</p>
+                                    <p><strong>Address:</strong> ${lectureAddress}</p>
+                                </div>
+
+                                <div style="border-top: 1px solid #ccc; padding-top: 1rem;">
+                                    <p><strong>Your distance from lecture:</strong> ${data.responseData.distanceFromClass.toFixed(2)} m</p>
+                                    <p><strong>Allowed threshold:</strong> ${data.responseData.threshold} m</p>
+                                </div>
+                            `;
+                            } else {
+                                // Unknown response code
+                                locationDetails.innerHTML = `
+                                <h3>❌ Unexpected Error</h3>
+                                <p style="color: #f44336;">${data.responseMessage || 'An unexpected error occurred.'}</p>
+                            `;
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Location verification error:", error);
+                            locationDetails.innerHTML = `
+                            <h3>❌ Error</h3>
+                            <p style="color: #f44336;">Failed to verify location: ${error.message}</p>
+                        `;
+                        });
+                },
+                (error) => {
+                    console.error("Geolocation error:", error);
+                    let errorMessage = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Location access denied. Please enable location permissions.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Location information unavailable. Please try again.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Location request timed out. Please try again.';
+                            break;
+                        default:
+                            errorMessage = 'An unknown error occurred while getting location.';
+                    }
+                    locationDetails.innerHTML = `<p style="color: #f44336;">❌ ${errorMessage}</p>`;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        } else {
+            locationDetails.innerHTML = '<p style="color: #f44336;">❌ Geolocation is not supported by your browser.</p>';
+        }
+    });
+
+    async function getAddressFromCoordinates(lat, lon) {
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+            );
+            const data = await response.json();
+            return data.display_name || 'Address not found';
+        } catch (error) {
+            console.error('Error fetching address:', error);
+            return 'Unable to fetch address';
+        }
+    }
+</script>
 </html>

@@ -99,6 +99,17 @@
                 const accuracy = position.coords.accuracy;
                 const timestamp = new Date().toISOString();
 
+                console.log(`Your current position is:
+                                        Latitude: ${lat}
+                                        Longitude: ${lon}
+                                        Accuracy: ${accuracy} meters
+                                        Timestamp: ${timestamp}`);
+                // Save to sessionStorage for later use
+                sessionStorage.setItem("fixedLat", String(lat));
+                sessionStorage.setItem("fixedLon", String(lon));
+                sessionStorage.setItem("accuracy", String(accuracy));
+                sessionStorage.setItem("timeStamp", timestamp);
+
                 // 🚀 Now include coords + timestamp in the request body
                 fetch(`${BASE_URL}/user/login-user`, {
                   method: "POST",
@@ -107,49 +118,24 @@
                   },
                   body: JSON.stringify({
                     userEmail: email,
-                    userPassword: password,
-                    latitude: lat,
-                    longitude: lon,
-                    accuracy: accuracy,
-                    timeStamp: timestamp,
+                    userPassword: password
                   }),
                   // credentials: "include"
                 })
                         .then(res => {
                           console.log("Full Response", res);
-                          console.log(`Your current position is:
-                                        Latitude: ${lat}
-                                        Longitude: ${lon}
-                                        Accuracy: ${accuracy} meters
-                                        Timestamp: ${timestamp}`);
-                          // if (!res.ok) {
-                          //   return res.json().then(data => {
-                          //     throw new Error(data.responseMessage || "Login failed.");
-                          //   });
-                          // }
+                          if (!res.ok) {
+                            return res.json().then(data => {
+                              throw new Error(data.responseMessage || "Login failed.");
+                            });
+                          }
                           return res.json();
                         })
                         .then(data => {
-                          if (data.responseCode === "66") {
-                            // Timestamp expired
-                            throw new Error(
-                                    `⏰ Check-in failed: You passed the allowed time window.\n
-                                      Distance from class: ${data.responseData.distanceFromClass.toFixed(2)} m
-                                      Allowed threshold: ${data.responseData.threshold} m`
-                            );
-                          } else if (data.responseCode === "77") {
-                            // Too far
-                            throw new Error(
-                                    `📍 Check-in failed: You are too far from the lecture location.\n
-                                    Distance from class: ${data.responseData.distanceFromClass.toFixed(2)} m
-                                    Allowed threshold: ${data.responseData.threshold} m`
-                            );
-                          }
-
                           console.log("Login successful: ", data);
                           sessionStorage.setItem("userEmail", email);
-                          setCookie("jwt", data.responseData.jwToken, 1);
-                          // window.location.href = "dashboard-room.html";
+                          setCookie("jwt", data.responseData, 1);
+                          window.location.href = "dashboard-room.html";
                         })
                         .catch(error => {
                           alert(error.message);
@@ -161,7 +147,6 @@
                 console.error("Geolocation error:", error);
                 alert("Could not get your location. Please enable GPS.");
               },
-              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     });
 
